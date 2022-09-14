@@ -1,4 +1,4 @@
-module test
+module github.com/senpainikolay/Kitchen
 
 go 1.18
 
