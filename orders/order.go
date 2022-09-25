@@ -10,11 +10,16 @@ type Order struct {
 	PickUpTime int64   `json:"pick_up_time"`
 	TableId    int     `json:"table_id"`
 	WaiterId   int     `json:"waiter_id"`
-	Wg         sync.WaitGroup
+}
+
+type Payload struct {
+	Order
+	CookingDetails []CookingDetails
 }
 
 type OrderList struct {
 	Orders []Order
+	Mutex  sync.Mutex
 }
 
 func (ol *OrderList) Append(o *Order) {
@@ -28,9 +33,12 @@ func (ol *OrderList) IsEmpty() bool {
 	return false
 }
 
-func (ol *OrderList) PickUp() *Order {
+func (ol *OrderList) PickUp() (*Order, bool) {
+	if len(ol.Orders) == 0 {
+		return nil, true
+	}
 	elem := ol.Orders[0]
 	sliced := ol.Orders[1:]
 	ol.Orders = sliced
-	return &elem
+	return &elem, false
 }
