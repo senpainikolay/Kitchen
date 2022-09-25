@@ -36,15 +36,11 @@ func main() {
 
 	r := gin.Default()
 	r.POST("/order", PostHomePage)
-	// fmt.Printf("Recieved:  %+v", cooks.Cook)
 
-	fmt.Printf("KEKEKEKE %+v\n", orders.Menu.Foods[1])
 	go func() {
-		time.Sleep(3 * time.Second)
 		for i := 0; i < len(cooks.Cook); i++ {
 			idx := i
 			go cooks.Cook[idx].Work(&orderList, cooks)
-
 		}
 
 	}()

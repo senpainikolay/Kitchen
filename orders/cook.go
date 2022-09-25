@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+const TIME_UNIT = 50
+
 type Cook struct {
 	Id          int    `json:"id"`
 	Rank        int    `json:"rank"`
@@ -47,7 +49,6 @@ func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks) {
 	order, orderBool := orderList.PickUp()
 	orderList.Mutex.Unlock()
 	if orderBool {
-		//fmt.Printf("NO ORDER TO Recieve for this cook id %v\n", c.Id)
 		return
 	}
 	fmt.Printf("OREEDRRR:     %+v\n", order)
@@ -61,7 +62,9 @@ func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks) {
 	}
 
 	tempOrders := order.Items
-	idCounter := 0
+	idCounter1 := 0
+	idCounter2 := len(order.Items) - 1
+
 	for {
 		if len(tempOrders) == 0 {
 			break
@@ -72,39 +75,44 @@ func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks) {
 		case 0:
 
 			for i := 0; i < len(cooks.Cook); i++ {
-				if cooks.Cook[i].Rank == Menu.Foods[tempOrders[0]-1].Complexity || cooks.Cook[i].Rank == Menu.Foods[tempOrders[0]-1].Complexity-1 {
+				if len(cooks.Cook[i].CookChan) < 5 && (cooks.Cook[i].Rank == Menu.Foods[tempOrders[0]-1].Complexity || cooks.Cook[i].Rank == Menu.Foods[tempOrders[0]-1].Complexity-1) {
 					idx := i
-					tIdC := idCounter
+					tIdC := idCounter1
 					go func() { cooks.Cook[idx].CookChan <- &payload.CookingDetails[tIdC] }()
-					idCounter += 1
+					idCounter1 += 1
 
 					if len(tempOrders) <= 1 {
 						tempOrders = make([]int, 0)
 						break
 					} else {
-						tempOrders = remove(tempOrders)
-						break
+						tempOrders = popFront(tempOrders)
+						continue
 					}
-
 				}
+				time.Sleep(2 * TIME_UNIT * time.Millisecond)
+
 			}
 
 		case 1:
+
 			for i := len(cooks.Cook) - 1; i >= 0; i-- {
-				if cooks.Cook[i].Rank == Menu.Foods[tempOrders[0]-1].Complexity || cooks.Cook[i].Rank == Menu.Foods[tempOrders[0]-1].Complexity-1 {
+				if len(cooks.Cook[i].CookChan) < 5 && (cooks.Cook[i].Rank == Menu.Foods[tempOrders[0]-1].Complexity || cooks.Cook[i].Rank == Menu.Foods[tempOrders[0]-1].Complexity-1) {
 					idx := i
-					tIdC := idCounter
+					tIdC := idCounter2
 					go func() { cooks.Cook[idx].CookChan <- &payload.CookingDetails[tIdC] }()
-					idCounter += 1
+					idCounter2 -= 1
 					if len(tempOrders) <= 1 {
 						tempOrders = make([]int, 0)
 						break
 					} else {
-						tempOrders = remove(tempOrders)
-						break
+						tempOrders = popBack(tempOrders)
+						continue
 					}
 
 				}
+
+				time.Sleep(2 * TIME_UNIT * time.Millisecond)
+
 			}
 		}
 
@@ -121,19 +129,43 @@ func (c *Cook) Work(orderList *OrderList, cooks *Cooks) {
 
 		select {
 		case cd := <-c.CookChan:
-			time.Sleep(time.Duration(Menu.Foods[cd.FoodId-1].PreparationTime) * 50 * time.Millisecond)
-			cd.CookId = c.Id
-			cd.wg.Done()
+			if len(c.CookChan) >= 1 {
+				go func() {
+					time.Sleep(time.Duration(Menu.Foods[cd.FoodId-1].PreparationTime) * TIME_UNIT * time.Millisecond)
+					cd.CookId = c.Id
+					cd.wg.Done()
+				}()
+				for i := 0; i < c.Proficiency-1; i++ {
+					if len(c.CookChan) == 0 {
+						break
+					}
+					cdExtra := <-c.CookChan
+					go func() {
+						time.Sleep(time.Duration(Menu.Foods[cdExtra.FoodId-1].PreparationTime) * TIME_UNIT * time.Millisecond)
+						cdExtra.CookId = c.Id
+						cdExtra.wg.Done()
+					}()
+
+				}
+			} else {
+				time.Sleep(time.Duration(Menu.Foods[cd.FoodId-1].PreparationTime) * TIME_UNIT * time.Millisecond)
+				cd.CookId = c.Id
+				cd.wg.Done()
+			}
+
 		default:
 			go func() {
 				c.PickUpOrder(orderList, cooks)
 			}()
-
-			time.Sleep(5 * time.Second)
+			time.Sleep(TIME_UNIT * 3 * time.Millisecond)
 		}
 	}
 }
 
-func remove(slice []int) []int {
+func popFront(slice []int) []int {
 	return slice[1:]
+}
+
+func popBack(slice []int) []int {
+	return slice[:len(slice)-1]
 }
