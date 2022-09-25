@@ -1,10 +1,13 @@
 package orders
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
+	"net/http"
 	"os"
 	"sync"
 	"time"
@@ -54,7 +57,15 @@ func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks) {
 	var wg sync.WaitGroup
 	wg.Add(len(order.Items))
 
-	payload := Payload{Order: *order}
+	payload := Payload{
+		OrderId:    order.OrderId,
+		Items:      order.Items,
+		Priority:   order.Priority,
+		MaxWait:    order.MaxWait,
+		PickUpTime: order.PickUpTime,
+		TableId:    order.TableId,
+		WaiterId:   order.WaiterId,
+	}
 	for i, foodId := range payload.Items {
 		payload.CookingDetails = append(payload.CookingDetails, CookingDetails{FoodId: foodId})
 		payload.CookingDetails[i].wg = &wg
@@ -121,6 +132,8 @@ func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks) {
 
 	wg.Wait()
 	payload.CookingTime = time.Now().Unix() - oldTime
+	SendOrder(&payload)
+	log.Printf("Order id %v sent back to dining hall", payload.OrderId)
 	fmt.Printf("%+v\n", payload)
 
 }
@@ -162,6 +175,24 @@ func (c *Cook) Work(orderList *OrderList, cooks *Cooks) {
 			time.Sleep(TIME_UNIT * 3 * time.Millisecond)
 		}
 	}
+}
+
+func SendOrder(ord *Payload) {
+	postBody, _ := json.Marshal(*ord)
+	responseBody := bytes.NewBuffer(postBody)
+	resp, err := http.Post("http://localhost:8080/distribution", "application/json", responseBody)
+	if err != nil {
+		log.Fatalf("An Error Occured %v", err)
+	}
+	defer resp.Body.Close()
+	//Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	sb := string(body)
+	log.Printf(sb)
+
 }
 
 func popFront(slice []int) []int {
