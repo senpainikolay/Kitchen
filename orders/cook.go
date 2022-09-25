@@ -51,7 +51,6 @@ func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks) {
 	if orderBool {
 		return
 	}
-	fmt.Printf("OREEDRRR:     %+v\n", order)
 	var wg sync.WaitGroup
 	wg.Add(len(order.Items))
 
@@ -60,6 +59,8 @@ func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks) {
 		payload.CookingDetails = append(payload.CookingDetails, CookingDetails{FoodId: foodId})
 		payload.CookingDetails[i].wg = &wg
 	}
+
+	oldTime := time.Now().Unix()
 
 	tempOrders := order.Items
 	idCounter1 := 0
@@ -119,6 +120,7 @@ func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks) {
 	}
 
 	wg.Wait()
+	payload.CookingTime = time.Now().Unix() - oldTime
 	fmt.Printf("%+v\n", payload)
 
 }

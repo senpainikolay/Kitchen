@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"log"
 	"math/rand"
+	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 	"github.com/senpainikolay/Kitchen/orders"
 )
 
@@ -15,18 +16,22 @@ import (
 var orderList = orders.OrderList{}
 var cooks = orders.GetCooks()
 
-func PostHomePage(c *gin.Context) {
-
-	body := c.Request.Body
-	value, err := ioutil.ReadAll(body)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
+func PostDingHallOrders(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	var order orders.Order
-	json.Unmarshal(value, &order)
+	err := json.NewDecoder(r.Body).Decode(&order)
+	if err != nil {
+		log.Fatalln("There was an error decoding the request body into the struct")
+	}
+
 	orderList.Append(&order)
-	fmt.Printf("Recieved:  %+v", order)
+
+	fmt.Fprint(w, "Order recieved at Kitchen")
+	log.Printf("Order id %v recived at Kitchen!", order.OrderId)
+
 }
+
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
@@ -34,8 +39,8 @@ func main() {
 		cooks.Cook[i].CookChan = make(chan *orders.CookingDetails)
 	}
 
-	r := gin.Default()
-	r.POST("/order", PostHomePage)
+	r := mux.NewRouter()
+	r.HandleFunc("/order", PostDingHallOrders).Methods("POST")
 
 	go func() {
 		for i := 0; i < len(cooks.Cook); i++ {
@@ -44,6 +49,6 @@ func main() {
 		}
 
 	}()
-	r.Run(":8081")
+	http.ListenAndServe(":8081", r)
 
 }

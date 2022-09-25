@@ -14,7 +14,8 @@ type Order struct {
 
 type Payload struct {
 	Order
-	CookingDetails []CookingDetails
+	CookingTime    int64            `json:"cooking_time"`
+	CookingDetails []CookingDetails `json:"cooking_details"`
 }
 
 type OrderList struct {
