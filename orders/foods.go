@@ -31,3 +31,5 @@ func GetFoods() *Foods {
 	return &menu
 
 }
+
+var Menu = GetFoods()

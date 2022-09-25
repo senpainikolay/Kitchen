@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/senpainikolay/Kitchen/orders"
@@ -11,7 +13,6 @@ import (
 
 //global
 var orderList = orders.OrderList{}
-var menu = orders.GetFoods()
 var cooks = orders.GetCooks()
 
 func PostHomePage(c *gin.Context) {
@@ -23,30 +24,30 @@ func PostHomePage(c *gin.Context) {
 	}
 	var order orders.Order
 	json.Unmarshal(value, &order)
-	order.Wg.Add(len(order.Items))
 	orderList.Append(&order)
 	fmt.Printf("Recieved:  %+v", order)
 }
-
-func prepare() {
-
-	order := orderList.PickUp()
-
-	order.Wg.Wait()
-
-}
-
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
+	for i := 0; i < len(cooks.Cook); i++ {
+		cooks.Cook[i].CookChan = make(chan *orders.CookingDetails)
+	}
 
 	r := gin.Default()
 	r.POST("/order", PostHomePage)
-	go r.Run(":8081")
-	fmt.Printf("Recieved:  %+v", cooks.Cook[0])
-	/*
-		for {
-			prepare()
-			time.Sleep(4000 * time.Millisecond)
+	// fmt.Printf("Recieved:  %+v", cooks.Cook)
+
+	fmt.Printf("KEKEKEKE %+v\n", orders.Menu.Foods[1])
+	go func() {
+		time.Sleep(3 * time.Second)
+		for i := 0; i < len(cooks.Cook); i++ {
+			idx := i
+			go cooks.Cook[idx].Work(&orderList, cooks)
+
 		}
-	*/
+
+	}()
+	r.Run(":8081")
 
 }
