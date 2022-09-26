@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-const TIME_UNIT = 50
+const TIME_UNIT = 100
 
 type Cook struct {
 	Id          int    `json:"id"`
