@@ -134,7 +134,6 @@ func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks) {
 	payload.CookingTime = time.Now().Unix() - oldTime
 	SendOrder(&payload)
 	log.Printf("Order id %v sent back to dining hall", payload.OrderId)
-	fmt.Printf("%+v\n", payload)
 
 }
 

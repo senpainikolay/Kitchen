@@ -1,6 +1,8 @@
 package orders
 
-import "sync"
+import (
+	"sync"
+)
 
 type Order struct {
 	OrderId    int     `json:"order_id"`
@@ -30,7 +32,28 @@ type OrderList struct {
 }
 
 func (ol *OrderList) Append(o *Order) {
-	ol.Orders = append(ol.Orders, *o)
+	ol.Mutex.Lock()
+	defer ol.Mutex.Unlock()
+	if ol.IsEmpty() {
+		ol.Orders = append(ol.Orders, *o)
+	} else {
+		for i := 0; i < len(ol.Orders); i++ {
+			if o.Priority > ol.Orders[i].Priority && i < len(ol.Orders) {
+				ol.Insert(o, i)
+				break
+			}
+			if o.Priority <= ol.Orders[i].Priority && len(ol.Orders)-1 == i {
+				ol.Orders = append(ol.Orders, *o)
+				break
+			}
+		}
+	}
+
+}
+
+func (ol *OrderList) Insert(o *Order, index int) {
+	ol.Orders = append(ol.Orders[:index+1], ol.Orders[index:]...)
+	ol.Orders[index] = *o
 }
 
 func (ol *OrderList) IsEmpty() bool {
