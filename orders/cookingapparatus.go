@@ -11,6 +11,12 @@ type CookingApparatus struct {
 	C        sync.Cond
 }
 
+func GetApparatus() (*CookingApparatus, *CookingApparatus) {
+	Oven := CookingApparatus{0, NR_OF_OVENS, *sync.NewCond(&sync.Mutex{})}
+	Stove := CookingApparatus{0, NR_OF_STOVES, *sync.NewCond(&sync.Mutex{})}
+	return &Oven, &Stove
+}
+
 func (ca *CookingApparatus) borrow() {
 	ca.C.L.Lock()
 	for ca.Counter >= ca.Quantity {

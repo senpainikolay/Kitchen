@@ -16,6 +16,7 @@ import (
 //global
 var orderList = orders.OrderList{}
 var cooks = orders.GetCooks()
+var oven, stove = orders.GetApparatus()
 
 func PostDingHallOrders(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -49,7 +50,7 @@ func main() {
 	go func() {
 		for i := 0; i < len(cooks.Cook); i++ {
 			idx := i
-			go cooks.Cook[idx].Work(&orderList, cooks)
+			go cooks.Cook[idx].Work(&orderList, cooks, oven, stove)
 		}
 
 	}()

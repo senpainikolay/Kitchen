@@ -109,10 +109,7 @@ func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks) {
 
 }
 
-func (c *Cook) Work(orderList *OrderList, cooks *Cooks) {
-
-	Oven := CookingApparatus{0, NR_OF_OVENS, *sync.NewCond(&sync.Mutex{})}
-	Stove := CookingApparatus{0, NR_OF_STOVES, *sync.NewCond(&sync.Mutex{})}
+func (c *Cook) Work(orderList *OrderList, cooks *Cooks, Oven *CookingApparatus, Stove *CookingApparatus) {
 
 	for {
 		select {
