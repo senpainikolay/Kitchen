@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -28,15 +29,18 @@ func PostDingHallOrders(w http.ResponseWriter, r *http.Request) {
 	orderList.Append(&order)
 
 	fmt.Fprint(w, "Order recieved at Kitchen")
-	log.Printf("Order id %v recived at Kitchen!", order.OrderId)
+	log.Printf("Order id %v recieved at Kitchen!", order.OrderId)
 
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
+	rand.Seed(time.Now().UnixMilli())
 
 	for i := 0; i < len(cooks.Cook); i++ {
-		cooks.Cook[i].CookChan = make(chan *orders.CookingDetails)
+		cooks.Cook[i].CookChan = make(chan *orders.CookingDetails, cooks.Cook[i].Proficiency)
+		cooks.Cook[i].CondVar = *sync.NewCond(&sync.Mutex{})
+		cooks.Cook[i].Queue = make(chan *orders.CookingDetails, cooks.Cook[i].Proficiency)
+		cooks.Cook[i].CounterAvailable = 0
 	}
 
 	r := mux.NewRouter()
