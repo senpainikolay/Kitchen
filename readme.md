@@ -5,14 +5,14 @@ Author: Nicolae Gherman
 
 ### Docker  
 ```bash
-$ docker compose build
-$ docker compose up
+docker compose build
+docker compose up
 ```
 
 ### Main file 
 
 ```bash
-$ go run ./src 
+go run ./src 
 ``` 
 
 
