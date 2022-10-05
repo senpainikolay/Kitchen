@@ -1,7 +1,6 @@
 package orders
 
 import (
-	"fmt"
 	"sync"
 	"time"
 )
@@ -25,7 +24,6 @@ func (ca *CookingApparatus) Use(cd *CookingDetails, cookId int) {
 	ca.borrow()
 	time.Sleep(time.Duration(int64(Menu.Foods[cd.FoodId-1].PreparationTime) * TIME_UNIT * int64(time.Millisecond)))
 	ca.C.L.Lock()
-	fmt.Println(ca.Counter)
 	ca.Counter -= 1
 	ca.C.Signal()
 	cd.CookId = cookId

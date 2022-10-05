@@ -121,13 +121,13 @@ func (c *Cook) Work(orderList *OrderList, cooks *Cooks) {
 			go func() {
 				switch Menu.Foods[tempCd.FoodId-1].CookingApparatus {
 				case "oven":
-					go func() { Oven.Use(cd, c.Id) }()
+					go func() { Oven.Use(tempCd, c.Id) }()
 					c.CondVar.L.Lock()
 					c.CounterAvailable -= 1
 					c.CondVar.Signal()
 					c.CondVar.L.Unlock()
 				case "stove":
-					go func() { Stove.Use(cd, c.Id) }()
+					go func() { Stove.Use(tempCd, c.Id) }()
 					c.CondVar.L.Lock()
 					c.CounterAvailable -= 1
 					c.CondVar.Signal()
