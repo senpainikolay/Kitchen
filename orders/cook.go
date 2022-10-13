@@ -52,7 +52,7 @@ func GetCooks() *Cooks {
 
 }
 
-func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks) {
+func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks, Menu *Foods, address string) {
 	orderList.Mutex.Lock()
 	order, orderBool := orderList.PickUp()
 	orderList.Mutex.Unlock()
@@ -104,12 +104,12 @@ func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks) {
 	}
 	wg.Wait()
 	payload.CookingTime = (time.Now().UnixMilli() - oldTime) / int64(TIME_UNIT)
-	SendOrder(&payload)
+	SendOrder(&payload, address)
 	log.Printf("Order id %v sent back to dining hall", payload.OrderId)
 
 }
 
-func (c *Cook) Work(orderList *OrderList, cooks *Cooks, Oven *CookingApparatus, Stove *CookingApparatus) {
+func (c *Cook) Work(orderList *OrderList, cooks *Cooks, Oven *CookingApparatus, Stove *CookingApparatus, Menu *Foods, address string) {
 
 	for {
 		select {
@@ -157,7 +157,7 @@ func (c *Cook) Work(orderList *OrderList, cooks *Cooks, Oven *CookingApparatus, 
 		default:
 			// PickUpTime
 			go func() {
-				c.PickUpOrder(orderList, cooks)
+				c.PickUpOrder(orderList, cooks, Menu, address)
 			}()
 			time.Sleep(1 * time.Millisecond)
 
@@ -166,10 +166,10 @@ func (c *Cook) Work(orderList *OrderList, cooks *Cooks, Oven *CookingApparatus, 
 	}
 }
 
-func SendOrder(ord *Payload) {
+func SendOrder(ord *Payload, address string) {
 	postBody, _ := json.Marshal(*ord)
 	responseBody := bytes.NewBuffer(postBody)
-	resp, err := http.Post("http://localhost:8080/distribution", "application/json", responseBody)
+	resp, err := http.Post("http://"+address+"/distribution", "application/json", responseBody)
 	if err != nil {
 		log.Fatalf("An Error Occured %v", err)
 	}

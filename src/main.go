@@ -16,7 +16,9 @@ import (
 //global
 var orderList = orders.OrderList{}
 var cooks = orders.GetCooks()
-var oven, stove = orders.GetApparatus()
+var Menu = orders.GetFoods()
+var oven, stove = orders.GetApparatus(Menu)
+var conf = orders.GetConf()
 
 func PostDingHallOrders(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -35,6 +37,7 @@ func PostDingHallOrders(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
 	rand.Seed(time.Now().UnixMilli())
 
 	for i := 0; i < len(cooks.Cook); i++ {
@@ -50,11 +53,11 @@ func main() {
 	go func() {
 		for i := 0; i < len(cooks.Cook); i++ {
 			idx := i
-			go cooks.Cook[idx].Work(&orderList, cooks, oven, stove)
+			go cooks.Cook[idx].Work(&orderList, cooks, oven, stove, Menu, conf.DiningHallAddress)
 		}
 
 	}()
 
-	http.ListenAndServe(":8081", r)
+	http.ListenAndServe(":"+conf.Port, r)
 
 }

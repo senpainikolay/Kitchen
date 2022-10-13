@@ -1,0 +1,4 @@
+{ 
+    "port" : "8081", 
+    "dining_hall_address" : "dininghall2:8091"
+}

@@ -1,0 +1,32 @@
+{  "cooks" : [ 
+   { 
+        "id" : 1,
+        "rank": 3,
+        "proficiency": 4, 
+        "name": "Gordon Ramsay",
+        "catch_phrase": "Hey, panini head, are you listening to me?"
+    },
+    {  
+        "id" :2,
+        "rank": 2,
+        "proficiency": 3, 
+        "name": "Guy Fieri",
+        "catch_phrase": "Holy moly, Stromboli!"
+    }, 
+    {  
+        "id" : 3,
+        "rank": 2,
+        "proficiency": 2, 
+        "name": "Joseph Johnson",
+        "catch_phrase": "Don't be too hard on yourself."
+    }, 
+    {  
+        "id" : 4,
+        "rank": 1,
+        "proficiency": 2, 
+        "name": "Bobby Flay",
+        "catch_phrase": "Go vegetable heavy"
+    }
+   ]
+
+}
