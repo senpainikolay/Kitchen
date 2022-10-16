@@ -21,4 +21,4 @@ services:
 networks:
   default:
     name: restaurant
-    #external: true 
+    external: true 
