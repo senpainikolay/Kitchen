@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
@@ -31,8 +30,8 @@ func PostDingHallOrders(w http.ResponseWriter, r *http.Request) {
 
 	orderList.Append(&order)
 
-	fmt.Fprint(w, "Order recieved at Kitchen")
-	log.Printf("Order id %v recieved at Kitchen!", order.OrderId)
+	// fmt.Fprint(w, "Order recieved at Kitchen")
+	// log.Printf("Order id %v recieved at Kitchen!", order.OrderId)
 
 }
 
@@ -50,13 +49,10 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/order", PostDingHallOrders).Methods("POST")
 
-	go func() {
-		for i := 0; i < len(cooks.Cook); i++ {
-			idx := i
-			go cooks.Cook[idx].Work(&orderList, cooks, oven, stove, Menu, conf.DiningHallAddress)
-		}
-
-	}()
+	for i := 0; i < len(cooks.Cook); i++ {
+		idx := i
+		go cooks.Cook[idx].Work(&orderList, cooks, oven, stove, Menu, conf.DiningHallAddress)
+	}
 
 	http.ListenAndServe(":"+conf.Port, r)
 

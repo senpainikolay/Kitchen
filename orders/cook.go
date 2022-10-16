@@ -105,7 +105,7 @@ func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks, Menu *Foods, addr
 	wg.Wait()
 	payload.CookingTime = (time.Now().UnixMilli() - oldTime) / int64(TIME_UNIT)
 	SendOrder(&payload, address)
-	log.Printf("Order id %v sent back to dining hall", payload.OrderId)
+	// log.Printf("Order id %v sent back to dining hall", payload.OrderId)
 
 }
 
@@ -155,10 +155,11 @@ func (c *Cook) Work(orderList *OrderList, cooks *Cooks, Oven *CookingApparatus, 
 			}()
 
 		default:
-			// PickUpTime
 			go func() {
 				c.PickUpOrder(orderList, cooks, Menu, address)
 			}()
+
+			// PickUpTime
 			time.Sleep(1 * time.Millisecond)
 
 		}
