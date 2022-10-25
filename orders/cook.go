@@ -34,9 +34,10 @@ type Cooks struct {
 	Cook []Cook `json:"cooks"`
 }
 type CookingDetails struct {
-	CookId int `json:"cook_id"`
-	FoodId int `json:"food_id"`
-	wg     *sync.WaitGroup
+	CookId              int `json:"cook_id"`
+	FoodId              int `json:"food_id"`
+	wg                  *sync.WaitGroup
+	TempPreparationTime int
 }
 
 func GetCooks() *Cooks {
@@ -52,7 +53,7 @@ func GetCooks() *Cooks {
 
 }
 
-func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks, Menu *Foods, address string) {
+func DistributeFoods(orderList *OrderList, cooks *Cooks, Menu *Foods, address string, olController *OrderListPickUpController) {
 	orderList.Mutex.Lock()
 	order, orderBool := orderList.PickUp()
 	orderList.Mutex.Unlock()
@@ -74,6 +75,7 @@ func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks, Menu *Foods, addr
 	for i, foodId := range payload.Items {
 		payload.CookingDetails = append(payload.CookingDetails, CookingDetails{FoodId: foodId})
 		payload.CookingDetails[i].wg = &wg
+		payload.CookingDetails[i].TempPreparationTime = Menu.Foods[foodId-1].PreparationTime
 	}
 
 	oldTime := time.Now().UnixMilli()
@@ -103,13 +105,18 @@ func (c *Cook) PickUpOrder(orderList *OrderList, cooks *Cooks, Menu *Foods, addr
 		i += 1
 	}
 	wg.Wait()
+	go func() {
+		olController.Mutex.Lock()
+		olController.CounterOrdersPickedUp -= 1
+		olController.Mutex.Unlock()
+	}()
 	payload.CookingTime = (time.Now().UnixMilli() - oldTime) / int64(TIME_UNIT)
 	SendOrder(&payload, address)
 	// log.Printf("Order id %v sent back to dining hall", payload.OrderId)
 
 }
 
-func (c *Cook) Work(orderList *OrderList, cooks *Cooks, Oven *CookingApparatus, Stove *CookingApparatus, Menu *Foods, address string) {
+func (c *Cook) Work(orderList *OrderList, cooks *Cooks, Oven *CookingApparatus, Stove *CookingApparatus, Menu *Foods, address string, olController *OrderListPickUpController) {
 
 	for {
 		select {
@@ -118,25 +125,32 @@ func (c *Cook) Work(orderList *OrderList, cooks *Cooks, Oven *CookingApparatus, 
 			go func() {
 				switch Menu.Foods[tempCd.FoodId-1].CookingApparatus {
 				case "oven":
-					go func() { Oven.Use(tempCd, c.Id) }()
+					go func() { Oven.Use(tempCd, c) }()
 					c.CondVar.L.Lock()
 					c.CounterAvailable -= 1
 					c.CondVar.Signal()
 					c.CondVar.L.Unlock()
 				case "stove":
-					go func() { Stove.Use(tempCd, c.Id) }()
+					go func() { Stove.Use(tempCd, c) }()
 					c.CondVar.L.Lock()
 					c.CounterAvailable -= 1
 					c.CondVar.Signal()
 					c.CondVar.L.Unlock()
 
 				default:
-					time.Sleep(time.Duration(int64(Menu.Foods[cd.FoodId-1].PreparationTime) * TIME_UNIT * int64(time.Millisecond)))
+					if cd.TempPreparationTime <= 3 {
+						time.Sleep(time.Duration(int64(tempCd.TempPreparationTime) * TIME_UNIT * int64(time.Millisecond)))
+						tempCd.CookId = c.Id
+						tempCd.wg.Done()
+					} else {
+						time.Sleep(time.Duration(3 * TIME_UNIT * int64(time.Millisecond)))
+						tempCd.TempPreparationTime -= 3
+						c.Queue <- tempCd
+					}
+
 					c.CondVar.L.Lock()
 					c.CounterAvailable -= 1
 					c.CondVar.Signal()
-					tempCd.CookId = c.Id
-					tempCd.wg.Done()
 					c.CondVar.L.Unlock()
 
 				}
@@ -155,11 +169,6 @@ func (c *Cook) Work(orderList *OrderList, cooks *Cooks, Oven *CookingApparatus, 
 			}()
 
 		default:
-			go func() {
-				c.PickUpOrder(orderList, cooks, Menu, address)
-			}()
-
-			// PickUpTime
 			time.Sleep(1 * time.Millisecond)
 
 		}

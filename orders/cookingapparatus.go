@@ -27,14 +27,20 @@ func (ca *CookingApparatus) borrow() {
 	ca.C.L.Unlock()
 }
 
-func (ca *CookingApparatus) Use(cd *CookingDetails, cookId int) {
+func (ca *CookingApparatus) Use(cd *CookingDetails, cook *Cook) {
 	ca.borrow()
-	time.Sleep(time.Duration(int64(ca.Menu.Foods[cd.FoodId-1].PreparationTime) * TIME_UNIT * int64(time.Millisecond)))
+	if cd.TempPreparationTime <= 5 {
+		time.Sleep(time.Duration(int64(cd.TempPreparationTime) * TIME_UNIT * int64(time.Millisecond)))
+		cd.CookId = cook.Id
+		cd.wg.Done()
+	} else {
+		time.Sleep(time.Duration(5 * TIME_UNIT * int64(time.Millisecond)))
+		cd.TempPreparationTime -= 5
+		cook.Queue <- cd
+	}
 	ca.C.L.Lock()
 	ca.Counter -= 1
 	ca.C.Signal()
-	cd.CookId = cookId
-	cd.wg.Done()
 	ca.C.L.Unlock()
 
 }

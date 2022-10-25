@@ -31,6 +31,11 @@ type OrderList struct {
 	Mutex  sync.Mutex
 }
 
+type OrderListPickUpController struct {
+	Mutex                 sync.Mutex
+	CounterOrdersPickedUp int
+}
+
 func (ol *OrderList) Append(o *Order) {
 	ol.Mutex.Lock()
 	defer ol.Mutex.Unlock()

@@ -14,6 +14,7 @@ import (
 
 //global
 var orderList = orders.OrderList{}
+var olController = orders.OrderListPickUpController{}
 var cooks = orders.GetCooks()
 var Menu = orders.GetFoods()
 var oven, stove = orders.GetApparatus(Menu)
@@ -29,6 +30,12 @@ func PostDingHallOrders(w http.ResponseWriter, r *http.Request) {
 	}
 
 	orderList.Append(&order)
+	olController.Mutex.Lock()
+	olController.CounterOrdersPickedUp += 1
+	log.Println(olController.CounterOrdersPickedUp)
+	olController.Mutex.Unlock()
+
+	go func() { orders.DistributeFoods(&orderList, cooks, Menu, conf.DiningHallAddress, &olController) }()
 
 	// fmt.Fprint(w, "Order recieved at Kitchen")
 	// log.Printf("Order id %v recieved at Kitchen!", order.OrderId)
@@ -42,7 +49,7 @@ func main() {
 	for i := 0; i < len(cooks.Cook); i++ {
 		cooks.Cook[i].CookChan = make(chan *orders.CookingDetails, cooks.Cook[i].Proficiency)
 		cooks.Cook[i].CondVar = *sync.NewCond(&sync.Mutex{})
-		cooks.Cook[i].Queue = make(chan *orders.CookingDetails, cooks.Cook[i].Proficiency)
+		cooks.Cook[i].Queue = make(chan *orders.CookingDetails, 10)
 		cooks.Cook[i].CounterAvailable = 0
 	}
 
@@ -51,7 +58,7 @@ func main() {
 
 	for i := 0; i < len(cooks.Cook); i++ {
 		idx := i
-		go cooks.Cook[idx].Work(&orderList, cooks, oven, stove, Menu, conf.DiningHallAddress)
+		go cooks.Cook[idx].Work(&orderList, cooks, oven, stove, Menu, conf.DiningHallAddress, &olController)
 	}
 
 	http.ListenAndServe(":"+conf.Port, r)
