@@ -1,4 +1,6 @@
 { 
     "port" : "8080", 
-    "dining_hall_address" : "localhost:8090"
+    "dining_hall_address" : "localhost:8090", 
+    "nr_of_stoves" : 2, 
+    "nr_of_ovens" : 1 
 } 

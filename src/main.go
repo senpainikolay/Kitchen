@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
@@ -16,9 +17,14 @@ import (
 var orderList = orders.OrderList{}
 var olController = orders.OrderListPickUpController{}
 var cooks = orders.GetCooks()
+var cookProfiencySum = GetSumProfiencyOfCooks()
 var Menu = orders.GetFoods()
-var oven, stove = orders.GetApparatus(Menu)
 var conf = orders.GetConf()
+var oven, stove = orders.GetApparatus(Menu, conf.NR_OF_STOVES, conf.NR_OF_OVENS)
+
+const (
+	TIME_UNIT = 100
+)
 
 func PostDingHallOrders(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -30,9 +36,10 @@ func PostDingHallOrders(w http.ResponseWriter, r *http.Request) {
 	}
 
 	orderList.Append(&order)
+
 	olController.Mutex.Lock()
 	olController.CounterOrdersPickedUp += 1
-	log.Println(olController.CounterOrdersPickedUp)
+	olController.FoodCounter += len(order.Items)
 	olController.Mutex.Unlock()
 
 	go func() { orders.DistributeFoods(&orderList, cooks, Menu, conf.DiningHallAddress, &olController) }()
@@ -55,6 +62,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/order", PostDingHallOrders).Methods("POST")
+	r.HandleFunc("/estimationCalculation", GetEWT).Methods("GET")
 
 	for i := 0; i < len(cooks.Cook); i++ {
 		idx := i
@@ -62,5 +70,32 @@ func main() {
 	}
 
 	http.ListenAndServe(":"+conf.Port, r)
+
+}
+
+func GetEWT(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	var D, E int
+	D = conf.NR_OF_OVENS + conf.NR_OF_STOVES
+	olController.Mutex.Lock()
+	E = olController.FoodCounter
+	olController.Mutex.Unlock()
+
+	BDE := orders.EWTCalculation{B: cookProfiencySum, D: D, E: E}
+
+	resp, _ := json.Marshal(&BDE)
+	fmt.Fprint(w, string(resp))
+
+}
+
+func GetSumProfiencyOfCooks() int {
+	var sum int
+	for _, cook := range cooks.Cook {
+		sum += cook.Proficiency
+
+	}
+	return sum
 
 }

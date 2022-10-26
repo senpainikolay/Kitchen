@@ -13,9 +13,7 @@ import (
 )
 
 const (
-	TIME_UNIT    = 100
-	NR_OF_OVENS  = 2
-	NR_OF_STOVES = 1
+	TIME_UNIT = 100
 )
 
 type Cook struct {
@@ -105,13 +103,14 @@ func DistributeFoods(orderList *OrderList, cooks *Cooks, Menu *Foods, address st
 		i += 1
 	}
 	wg.Wait()
-	go func() {
-		olController.Mutex.Lock()
-		olController.CounterOrdersPickedUp -= 1
-		olController.Mutex.Unlock()
-	}()
+
+	olController.Mutex.Lock()
+	olController.CounterOrdersPickedUp -= 1
+	olController.Mutex.Unlock()
 	payload.CookingTime = (time.Now().UnixMilli() - oldTime) / int64(TIME_UNIT)
 	SendOrder(&payload, address)
+	log.Println(olController.CounterOrdersPickedUp)
+
 	// log.Printf("Order id %v sent back to dining hall", payload.OrderId)
 
 }
@@ -125,13 +124,13 @@ func (c *Cook) Work(orderList *OrderList, cooks *Cooks, Oven *CookingApparatus, 
 			go func() {
 				switch Menu.Foods[tempCd.FoodId-1].CookingApparatus {
 				case "oven":
-					go func() { Oven.Use(tempCd, c) }()
+					go func() { Oven.Use(tempCd, c, olController) }()
 					c.CondVar.L.Lock()
 					c.CounterAvailable -= 1
 					c.CondVar.Signal()
 					c.CondVar.L.Unlock()
 				case "stove":
-					go func() { Stove.Use(tempCd, c) }()
+					go func() { Stove.Use(tempCd, c, olController) }()
 					c.CondVar.L.Lock()
 					c.CounterAvailable -= 1
 					c.CondVar.Signal()
@@ -142,6 +141,8 @@ func (c *Cook) Work(orderList *OrderList, cooks *Cooks, Oven *CookingApparatus, 
 						time.Sleep(time.Duration(int64(tempCd.TempPreparationTime) * TIME_UNIT * int64(time.Millisecond)))
 						tempCd.CookId = c.Id
 						tempCd.wg.Done()
+						go FoodCounterDecreaser(olController)
+
 					} else {
 						time.Sleep(time.Duration(3 * TIME_UNIT * int64(time.Millisecond)))
 						tempCd.TempPreparationTime -= 3
@@ -191,6 +192,13 @@ func SendOrder(ord *Payload, address string) {
 	}
 	sb := string(body)
 	log.Printf(sb)
+
+}
+
+func FoodCounterDecreaser(olc *OrderListPickUpController) {
+	olc.Mutex.Lock()
+	olc.FoodCounter -= 1
+	olc.Mutex.Unlock()
 
 }
 

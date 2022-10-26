@@ -13,6 +13,11 @@ type Order struct {
 	TableId    int     `json:"table_id"`
 	WaiterId   int     `json:"waiter_id"`
 }
+type EWTCalculation struct {
+	B int `json:"B"`
+	D int `json:"D"`
+	E int `json:"E"`
+}
 
 type Payload struct {
 	OrderId        int              `json:"order_id"`
@@ -34,6 +39,7 @@ type OrderList struct {
 type OrderListPickUpController struct {
 	Mutex                 sync.Mutex
 	CounterOrdersPickedUp int
+	FoodCounter           int
 }
 
 func (ol *OrderList) Append(o *Order) {
