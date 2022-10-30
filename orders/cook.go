@@ -104,13 +104,11 @@ func DistributeFoods(orderList *OrderList, cooks *Cooks, Menu *Foods, address st
 	}
 	wg.Wait()
 
+	payload.CookingTime = (time.Now().UnixMilli() - oldTime) / int64(TIME_UNIT)
+	go SendOrder(&payload, address)
 	olController.Mutex.Lock()
 	olController.CounterOrdersPickedUp -= 1
 	olController.Mutex.Unlock()
-	payload.CookingTime = (time.Now().UnixMilli() - oldTime) / int64(TIME_UNIT)
-	SendOrder(&payload, address)
-	log.Println(olController.CounterOrdersPickedUp)
-
 	// log.Printf("Order id %v sent back to dining hall", payload.OrderId)
 
 }
@@ -137,15 +135,15 @@ func (c *Cook) Work(orderList *OrderList, cooks *Cooks, Oven *CookingApparatus, 
 					c.CondVar.L.Unlock()
 
 				default:
-					if cd.TempPreparationTime <= 3 {
+					if cd.TempPreparationTime <= 10 {
 						time.Sleep(time.Duration(int64(tempCd.TempPreparationTime) * TIME_UNIT * int64(time.Millisecond)))
 						tempCd.CookId = c.Id
 						tempCd.wg.Done()
 						go FoodCounterDecreaser(olController)
 
 					} else {
-						time.Sleep(time.Duration(3 * TIME_UNIT * int64(time.Millisecond)))
-						tempCd.TempPreparationTime -= 3
+						time.Sleep(time.Duration(10 * TIME_UNIT * int64(time.Millisecond)))
+						tempCd.TempPreparationTime -= 10
 						c.Queue <- tempCd
 					}
 

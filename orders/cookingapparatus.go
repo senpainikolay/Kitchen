@@ -29,14 +29,14 @@ func (ca *CookingApparatus) borrow() {
 
 func (ca *CookingApparatus) Use(cd *CookingDetails, cook *Cook, olController *OrderListPickUpController) {
 	ca.borrow()
-	if cd.TempPreparationTime <= 5 {
+	if cd.TempPreparationTime <= 10 {
 		time.Sleep(time.Duration(int64(cd.TempPreparationTime) * TIME_UNIT * int64(time.Millisecond)))
 		cd.CookId = cook.Id
 		cd.wg.Done()
 		go FoodCounterDecreaser(olController)
 	} else {
-		time.Sleep(time.Duration(5 * TIME_UNIT * int64(time.Millisecond)))
-		cd.TempPreparationTime -= 5
+		time.Sleep(time.Duration(10 * TIME_UNIT * int64(time.Millisecond)))
+		cd.TempPreparationTime -= 10
 		cook.Queue <- cd
 	}
 	ca.C.L.Lock()

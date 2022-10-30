@@ -41,10 +41,9 @@ func PostDingHallOrders(w http.ResponseWriter, r *http.Request) {
 	olController.CounterOrdersPickedUp += 1
 	olController.FoodCounter += len(order.Items)
 	olController.Mutex.Unlock()
+	log.Println(olController.CounterOrdersPickedUp)
 
 	go func() { orders.DistributeFoods(&orderList, cooks, Menu, conf.DiningHallAddress, &olController) }()
-
-	// fmt.Fprint(w, "Order recieved at Kitchen")
 	// log.Printf("Order id %v recieved at Kitchen!", order.OrderId)
 
 }
@@ -56,13 +55,14 @@ func main() {
 	for i := 0; i < len(cooks.Cook); i++ {
 		cooks.Cook[i].CookChan = make(chan *orders.CookingDetails, cooks.Cook[i].Proficiency)
 		cooks.Cook[i].CondVar = *sync.NewCond(&sync.Mutex{})
-		cooks.Cook[i].Queue = make(chan *orders.CookingDetails, 10)
+		cooks.Cook[i].Queue = make(chan *orders.CookingDetails, cooks.Cook[i].Proficiency)
 		cooks.Cook[i].CounterAvailable = 0
 	}
 
 	r := mux.NewRouter()
 	r.HandleFunc("/order", PostDingHallOrders).Methods("POST")
 	r.HandleFunc("/estimationCalculation", GetEWT).Methods("GET")
+	r.HandleFunc("/getOrderStatus", GetOrdersStatus).Methods("GET")
 
 	for i := 0; i < len(cooks.Cook); i++ {
 		idx := i
@@ -87,6 +87,23 @@ func GetEWT(w http.ResponseWriter, r *http.Request) {
 
 	resp, _ := json.Marshal(&BDE)
 	fmt.Fprint(w, string(resp))
+
+}
+
+func GetOrdersStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	olController.Mutex.Lock()
+	temp := olController.CounterOrdersPickedUp
+	olController.Mutex.Unlock()
+	// Buffer control
+	if temp >= 5 {
+		fmt.Fprint(w, 1)
+	} else {
+		fmt.Fprint(w, 0)
+
+	}
 
 }
 
