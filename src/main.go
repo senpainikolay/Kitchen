@@ -69,6 +69,9 @@ func main() {
 		go cooks.Cook[idx].Work(&orderList, cooks, oven, stove, Menu, conf.DiningHallAddress, &olController)
 	}
 
+	go oven.Work(&olController, &orders.CAOrdController{Counter: 0, C: *sync.NewCond(&sync.Mutex{})})
+	go stove.Work(&olController, &orders.CAOrdController{Counter: 0, C: *sync.NewCond(&sync.Mutex{})})
+
 	http.ListenAndServe(":"+conf.Port, r)
 
 }

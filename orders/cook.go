@@ -122,13 +122,15 @@ func (c *Cook) Work(orderList *OrderList, cooks *Cooks, Oven *CookingApparatus, 
 			go func() {
 				switch Menu.Foods[tempCd.FoodId-1].CookingApparatus {
 				case "oven":
-					go func() { Oven.Use(tempCd, c, olController) }()
+					go func() { Oven.Queue <- tempCd }()
+
 					c.CondVar.L.Lock()
 					c.CounterAvailable -= 1
 					c.CondVar.Signal()
 					c.CondVar.L.Unlock()
+
 				case "stove":
-					go func() { Stove.Use(tempCd, c, olController) }()
+					go func() { Stove.Queue <- tempCd }()
 					c.CondVar.L.Lock()
 					c.CounterAvailable -= 1
 					c.CondVar.Signal()
@@ -140,17 +142,16 @@ func (c *Cook) Work(orderList *OrderList, cooks *Cooks, Oven *CookingApparatus, 
 						tempCd.CookId = c.Id
 						tempCd.wg.Done()
 						go FoodCounterDecreaser(olController)
+						c.CondVar.L.Lock()
+						c.CounterAvailable -= 1
+						c.CondVar.Signal()
+						c.CondVar.L.Unlock()
 
 					} else {
 						time.Sleep(time.Duration(10 * TIME_UNIT * int64(time.Millisecond)))
 						tempCd.TempPreparationTime -= 10
-						c.Queue <- tempCd
+						go func() { c.CookChan <- tempCd }()
 					}
-
-					c.CondVar.L.Lock()
-					c.CounterAvailable -= 1
-					c.CondVar.Signal()
-					c.CondVar.L.Unlock()
 
 				}
 			}()
