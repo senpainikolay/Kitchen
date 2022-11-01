@@ -16,7 +16,7 @@
     {  
         "id" : 3,
         "rank": 2,
-        "proficiency": 2, 
+        "proficiency": 3, 
         "name": "Joseph Johnson",
         "catch_phrase": "Don't be too hard on yourself."
     }, 
@@ -26,7 +26,8 @@
         "proficiency": 2, 
         "name": "Bobby Flay",
         "catch_phrase": "Go vegetable heavy"
-    }
+    } 
+
    ]
 
 }

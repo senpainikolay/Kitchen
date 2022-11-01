@@ -87,7 +87,7 @@ func DistributeFoods(orderList *OrderList, cooks *Cooks, Menu *Foods, address st
 		if i == len(cooks.Cook) {
 			i = 0
 		}
-		if len(cooks.Cook[i].Queue) < cooks.Cook[i].Proficiency+4 && cooks.Cook[i].Rank == Menu.Foods[tempOrders[0]-1].Complexity || cooks.Cook[i].Rank == Menu.Foods[tempOrders[0]-1].Complexity-1 {
+		if len(cooks.Cook[i].Queue) < cooks.Cook[i].Proficiency+1 && cooks.Cook[i].Rank == Menu.Foods[tempOrders[0]-1].Complexity || cooks.Cook[i].Rank == Menu.Foods[tempOrders[0]-1].Complexity-1 {
 			tFIC := FoodIdCounter
 			idx := i
 			go func() {

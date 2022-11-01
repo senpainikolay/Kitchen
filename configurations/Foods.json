@@ -54,46 +54,34 @@
 }, 
 {
     "id": 8,
-    "name": "Lasagna",
-    "preparation_time": 30 ,
-    "complexity": 2 ,
-    "cooking_apparatus": "oven"
+    "name": "Lobster",
+    "preparation_time": 30,
+    "complexity": 3 ,
+    "cooking_apparatus": null
 }, 
 {
     "id": 9,
-    "name": "Burger",
-    "preparation_time": 15 ,
-    "complexity": 1 ,
+    "name": "White Alba Truffles.",
+    "preparation_time": 30,
+    "complexity": 3 ,
     "cooking_apparatus": "stove"
-},  
+}, 
+
 {
     "id": 10,
-    "name": "Gyros",
-    "preparation_time": 15 ,
-    "complexity": 1 ,
-    "cooking_apparatus": null
+    "name": "Kobe Beef",
+    "preparation_time": 30,
+    "complexity": 3 ,
+    "cooking_apparatus": null 
 }, 
 {
     "id": 11,
-    "name": "Kebab",
-    "preparation_time": 15 ,
-    "complexity": 1 ,
-    "cooking_apparatus": null
-}, 
-{
-    "id": 12,
-    "name": "Unagi Maki",
-    "preparation_time": 20 ,
+    "name": "Bluefin Tuna",
+    "preparation_time": 20,
     "complexity": 2 ,
-    "cooking_apparatus": null
-}, 
-{
-    "id": 13,
-    "name": "Tobacco Chicken",
-    "preparation_time": 30 ,
-    "complexity": 2 ,
-    "cooking_apparatus": "oven"
-}
+    "cooking_apparatus": null 
+} 
+
  ]  
  
  }
