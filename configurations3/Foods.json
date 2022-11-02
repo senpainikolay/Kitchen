@@ -1,0 +1,101 @@
+
+{
+
+"foods" : [ 
+
+{
+    "id": 1,
+    "name": "Aubergine",
+    "preparation_time": 20 ,
+    "complexity": 2 ,
+    "cooking_apparatus": "oven"
+}, 
+{
+    "id": 2,
+    "name": "Lasagna",
+    "preparation_time": 32 ,
+    "complexity": 3 ,
+    "cooking_apparatus": null
+}, 
+{
+    "id": 3,
+    "name": "Burger",
+    "preparation_time": 15 ,
+    "complexity": 1 ,
+    "cooking_apparatus": "stove"
+},  
+{
+    "id": 4,
+    "name": "Gyros",
+    "preparation_time": 15 ,
+    "complexity": 1 ,
+    "cooking_apparatus": null
+}, 
+{
+    "id": 5,
+    "name": "Kebab",
+    "preparation_time": 15 ,
+    "complexity": 1 ,
+    "cooking_apparatus": "stove"
+}, 
+{
+    "id": 6, 
+    "name": "Unagi Maki",
+    "preparation_time": 20 ,
+    "complexity": 2 ,
+    "cooking_apparatus": null
+}, 
+{
+    "id": 7,
+    "name": "Tobacco Chicken",
+    "preparation_time": 32 ,
+    "complexity": 3,
+    "cooking_apparatus": "oven"
+}, 
+
+{
+    "id": 8,
+    "name": "Pasta",
+    "preparation_time": 15 ,
+    "complexity": 2,
+    "cooking_apparatus": "stove"
+}, 
+
+{
+    "id": 9,
+    "name": "Borsch",
+    "preparation_time": 25 ,
+    "complexity": 2,
+    "cooking_apparatus": null
+}, 
+{
+    "id": 10,
+    "name": "Placinta",
+    "preparation_time": 15 ,
+    "complexity": 2,
+    "cooking_apparatus": "oven"
+}, 
+{
+    "id": 11,
+    "name": "Shells",
+    "preparation_time": 32,
+    "complexity": 3,
+    "cooking_apparatus": null
+}, 
+{
+    "id": 12, 
+    "name": "Chiperi Umpliti'",
+    "preparation_time": 20 ,
+    "complexity": 2 ,
+    "cooking_apparatus": null
+},  
+{
+    "id": 13, 
+    "name": "Branza de vaci",
+    "preparation_time": 10 ,
+    "complexity": 1 ,
+    "cooking_apparatus": null
+} 
+]  
+ 
+ }

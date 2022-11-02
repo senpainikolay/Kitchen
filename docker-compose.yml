@@ -17,8 +17,29 @@ services:
           configurations: configurations2
           port: 8081
     ports:
-      - "8081:8081"
+      - "8081:8081" 
+  kitchen3:
+    build:
+      context: .
+      dockerfile: Dockerfile  
+      args:
+          configurations: configurations3
+          port: 8082
+    ports:
+      - "8082:8082" 
+  kitchen4:
+    build:
+      context: .
+      dockerfile: Dockerfile  
+      args:
+          configurations: configurations4
+          port: 8083
+    ports:
+      - "8083:8083"
 networks:
   default:
     name: restaurant
-    external: true 
+    external: true  
+
+
+  

@@ -1,0 +1,6 @@
+{ 
+    "port" : "8083", 
+    "dining_hall_address" : "dininghall4:8093", 
+    "nr_of_stoves" : 1, 
+    "nr_of_ovens" : 1 
+} 
