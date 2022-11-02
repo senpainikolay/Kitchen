@@ -41,7 +41,6 @@ func PostDingHallOrders(w http.ResponseWriter, r *http.Request) {
 	olController.CounterOrdersPickedUp += 1
 	olController.FoodCounter += len(order.Items)
 	olController.Mutex.Unlock()
-	log.Println(olController.CounterOrdersPickedUp)
 
 	go func() { orders.DistributeFoods(&orderList, cooks, Menu, conf.DiningHallAddress, &olController) }()
 	// log.Printf("Order id %v recieved at Kitchen!", order.OrderId)
@@ -63,6 +62,7 @@ func main() {
 	r.HandleFunc("/order", PostDingHallOrders).Methods("POST")
 	r.HandleFunc("/estimationCalculation", GetEWT).Methods("GET")
 	r.HandleFunc("/getOrderStatus", GetOrdersStatus).Methods("GET")
+	r.HandleFunc("/getPreparedItems", GetPreparedItems).Methods("GET")
 
 	for i := 0; i < len(cooks.Cook); i++ {
 		idx := i
@@ -107,6 +107,18 @@ func GetOrdersStatus(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, 0)
 
 	}
+
+}
+
+func GetPreparedItems(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	olController.Mutex.Lock()
+	temp := olController.PreparedItems
+	olController.Mutex.Unlock()
+
+	fmt.Fprint(w, temp)
 
 }
 

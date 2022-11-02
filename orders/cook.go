@@ -137,19 +137,20 @@ func (c *Cook) Work(orderList *OrderList, cooks *Cooks, Oven *CookingApparatus, 
 					c.CondVar.L.Unlock()
 
 				default:
-					if cd.TempPreparationTime <= 10 {
+					if cd.TempPreparationTime <= 1 {
 						time.Sleep(time.Duration(int64(tempCd.TempPreparationTime) * TIME_UNIT * int64(time.Millisecond)))
 						tempCd.CookId = c.Id
 						tempCd.wg.Done()
 						go FoodCounterDecreaser(olController)
+						go CountOrdersPrepared(olController)
 						c.CondVar.L.Lock()
 						c.CounterAvailable -= 1
 						c.CondVar.Signal()
 						c.CondVar.L.Unlock()
 
 					} else {
-						time.Sleep(time.Duration(10 * TIME_UNIT * int64(time.Millisecond)))
-						tempCd.TempPreparationTime -= 10
+						time.Sleep(time.Duration(1 * TIME_UNIT * int64(time.Millisecond)))
+						tempCd.TempPreparationTime -= 1
 						go func() { c.CookChan <- tempCd }()
 					}
 
@@ -197,6 +198,13 @@ func SendOrder(ord *Payload, address string) {
 func FoodCounterDecreaser(olc *OrderListPickUpController) {
 	olc.Mutex.Lock()
 	olc.FoodCounter -= 1
+	olc.Mutex.Unlock()
+
+}
+
+func CountOrdersPrepared(olc *OrderListPickUpController) {
+	olc.Mutex.Lock()
+	olc.PreparedItems += 1
 	olc.Mutex.Unlock()
 
 }

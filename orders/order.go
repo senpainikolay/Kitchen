@@ -40,6 +40,7 @@ type OrderListPickUpController struct {
 	Mutex                 sync.Mutex
 	CounterOrdersPickedUp int
 	FoodCounter           int
+	PreparedItems         int
 }
 
 func (ol *OrderList) Append(o *Order) {

@@ -40,6 +40,7 @@ func (ca *CookingApparatus) Use(cd *CookingDetails, olController *OrderListPickU
 		time.Sleep(time.Duration(int64(cd.TempPreparationTime) * TIME_UNIT * int64(time.Millisecond)))
 		cd.wg.Done()
 		go FoodCounterDecreaser(olController)
+		go CountOrdersPrepared(olController)
 		foodBuffer.C.L.Lock()
 		foodBuffer.Counter -= 1
 		foodBuffer.C.Signal()
@@ -69,7 +70,7 @@ func (ca *CookingApparatus) Work(olController *OrderListPickUpController, foodBu
 			tempCd := cda
 			go func() {
 				foodBuffer.C.L.Lock()
-				for foodBuffer.Counter >= 5 {
+				for foodBuffer.Counter >= 3 {
 					foodBuffer.C.Wait()
 				}
 				foodBuffer.Counter += 1
